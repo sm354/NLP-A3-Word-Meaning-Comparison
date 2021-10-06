@@ -47,17 +47,6 @@ class Train():
 
         print("resource preparation done: {}".format(datetime.datetime.now()))
 
-    def result_checkpoint(self, epoch, train_loss, val_loss, train_acc, val_acc, took):
-        if self.best_val_acc is None or val_acc > self.best_val_acc:
-            self.best_val_acc = val_acc
-            torch.save({
-                'accuracy': self.best_val_acc,
-                'options': self.model_options,
-                'model_dict': self.model.state_dict(),
-            }, '{}/{}/{}/best-{}-{}-params.pt'.format(self.args.results_dir, self.args.model, self.args.dataset, self.args.model, self.args.dataset))
-        self.logger.info('| Epoch {:3d} | train loss {:5.2f} | train acc {:5.2f} | val loss {:5.2f} | val acc {:5.2f} | time: {:5.2f}s |'
-                .format(epoch, train_loss, train_acc, val_loss, val_acc, took))
-
     def train(self):
         self.model.train(); self.dataset.train_iter.init_epoch()
         n_correct, n_total, n_loss = 0, 0, 0
@@ -90,6 +79,17 @@ class Train():
             val_loss = n_loss/n_total
             val_acc = 100. * n_correct/n_total
             return val_loss, val_acc
+
+    def result_checkpoint(self, epoch, train_loss, val_loss, train_acc, val_acc, took):
+        if self.best_val_acc is None or val_acc > self.best_val_acc:
+            self.best_val_acc = val_acc
+            torch.save({
+                'accuracy': self.best_val_acc,
+                'options': self.model_options,
+                'model_dict': self.model.state_dict(),
+            }, '{}/{}/{}/best-{}-{}-params.pt'.format(self.args.results_dir, self.args.model, self.args.dataset, self.args.model, self.args.dataset))
+        self.logger.info('| Epoch {:3d} | train loss {:5.2f} | train acc {:5.2f} | val loss {:5.2f} | val acc {:5.2f} | time: {:5.2f}s |'
+                .format(epoch, train_loss, train_acc, val_loss, val_acc, took))
 
     def execute(self):
         print(" [*] Training starts!")

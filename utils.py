@@ -1,23 +1,25 @@
 ## Various utility functions
 def parse_args():
     parser = ArgumentParser(description='NLI Baseline')
-    parser.add_argument('--dataset', '-d', type=str, default='mnli')
+    parser.add_argument('--dataset', '-d', type=str, default='data')
     parser.add_argument('--model', '-m', type=str, default='bilstm')
     parser.add_argument('--gpu', type=int, default=0)
     parser.add_argument('--batch_size', type=int, default=128)
-    parser.add_argument('--embed_dim', type=int, default=300)
-    parser.add_argument('--d_hidden', type=int, default=200)
-    parser.add_argument('--dp_ratio', type=int, default=0.2)
+    # parser.add_argument('--embed_dim', type=int, default=300)
+    # parser.add_argument('--d_hidden', type=int, default=200)
+    # parser.add_argument('--dp_ratio', type=int, default=0.2)
     parser.add_argument('--epochs', type=int, default=20)
     parser.add_argument('--lr', type=float, default=0.001)
-    parser.add_argument('--combine', type=str, default='cat')
+    # parser.add_argument('--combine', type=str, default='cat')
     parser.add_argument('--results_dir', type=str, default='results')
     return check_args(parser.parse_args())
 
 """checking arguments"""
 def check_args(args):
     # --result_dir
-    check_folder(os.path.join(args.results_dir, args.model, args.dataset))
+    check_folder(args.results_dir)
+    check_folder(args.model)
+    check_folder(args.dataset)
 
     # --epoch
     try:
@@ -62,7 +64,7 @@ def check_folder(log_dir):
 
 def get_logger(args, phase):
     logging.basicConfig(level=logging.INFO, 
-                        filename = "{}/{}/{}/{}.log".format(args.results_dir, args.model, args.dataset, phase),
+                        filename = "{}/{}.log".format(args.results_dir, phase),
                         format = '%(asctime)s - %(message)s', 
                         datefmt='%d-%b-%y %H:%M:%S')
     return logging.getLogger(phase)
