@@ -1,3 +1,8 @@
+from pdb import set_trace
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
 class myModel(nn.Module):
     def __init__(self, pretrained_embeddings, embed_dim=100, hidden_dim=100, batch_size=128, device=torch.device('cpu')):
         super(myModel, self).__init__()
