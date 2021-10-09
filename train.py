@@ -48,6 +48,7 @@ class Train():
         n_correct, n_total, n_loss = 0, 0, 0
         for batch_idx, batch in enumerate(self.dataset.train_iter):
             self.opt.zero_grad()
+            batch.label = batch.label.to(self.device)
             answer = self.model(batch)
             loss = self.criterion(answer, batch.label.float())
             answer = (answer>=0.5).long()
@@ -66,6 +67,7 @@ class Train():
         n_correct, n_total, n_loss = 0, 0, 0
         with torch.no_grad():
             for batch_idx, batch in enumerate(self.dataset.dev_iter):
+                batch.label = batch.label.to(self.device)
                 answer = self.model(batch)
                 loss = self.criterion(answer, batch.label.float())
                 answer = (answer>=0.5).long()
