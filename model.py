@@ -14,9 +14,8 @@ from torchtext.legacy import data
 from torchtext.data.utils import get_tokenizer
 
 class myModel(nn.Module):
-    def __init__(self, pretrained_embeddings, embed_dim=100, hidden_dim=100, batch_size=128, device=torch.device('cpu')):
+    def __init__(self, pretrained_embeddings, embed_dim=100, hidden_dim=100, device=torch.device('cpu')):
         super(myModel, self).__init__()
-        self.bs = batch_size
         self.embed_dim = embed_dim
         self.hidden_dim = hidden_dim
         self.device = device

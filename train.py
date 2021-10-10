@@ -1,6 +1,7 @@
 import os
 import time
 import datetime
+import numpy as np
 import pandas
 import logging
 from argparse import ArgumentParser
@@ -33,9 +34,9 @@ class Train():
         self.vocab = self.dataset.vocab
         self.embed_dim = self.vocab.vectors.shape[1]
 
-        self.model = myModel(self.vocab.vectors, self.embed_dim, self.args.hidden_dim, dataset_options['batch_size'], self.device)
+        self.model = myModel(self.vocab.vectors, self.embed_dim, self.args.hidden_dim, self.device)
 
-        self.model.to(self.device)
+        self.model = self.model.to(self.device)
         self.criterion = nn.BCELoss()
         self.opt = O.Adam(self.model.parameters(), lr = self.args.lr)
         self.best_val_acc = None
@@ -58,6 +59,7 @@ class Train():
             n_loss += loss.item()
 
             loss.backward(); self.opt.step()
+        print(np.bincount(answer))
         train_loss = n_loss/n_total
         train_acc = 100. * n_correct/n_total
         return train_loss, train_acc

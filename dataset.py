@@ -1,7 +1,10 @@
 import os
+import copy
 import time
 import datetime
+from typing import Text
 import pandas
+import dill
 import logging
 from argparse import ArgumentParser
 from pdb import set_trace
@@ -68,7 +71,10 @@ class myDataset:
             batch_size = 32,
             repeat = False
         )
-
+        with open(os.path.join(self.args.dataset, "Field_TEXT"), 'wb') as f:
+            dill.dump(TEXT, f)
+        print("TEXT Field saved in %s"%self.args.dataset)
+        
         self.vocab = TEXT.vocab
         self.train_iter = train_itr
         self.dev_iter = val_itr
