@@ -47,7 +47,7 @@ class Train():
         self.criterion = nn.BCELoss()
         self.opt = O.Adam(self.model.parameters(), lr = self.args.lr)
         self.best_val_acc = None
-        self.scheduler = StepLR(self.opt, step_size=5, gamma=0.5)
+        # self.scheduler = StepLR(self.opt, step_size=5, gamma=0.5)
 
         print("resource preparation done: {}".format(datetime.datetime.now()))
 
@@ -55,6 +55,8 @@ class Train():
         self.model.train(); self.dataset.train_iter.init_epoch()
         n_correct, n_total, n_loss = 0, 0, 0
         for batch_idx, batch in enumerate(self.dataset.train_iter):
+            # if batch.batch_size != self.args.batch_size:
+            #     print(batch.batch_size)
             self.opt.zero_grad()
             batch.label = batch.label.to(self.device)
             answer = self.model(batch)
@@ -65,7 +67,9 @@ class Train():
             n_total += batch.batch_size
             n_loss += loss.item()
 
-            loss.backward(); self.opt.step()
+            loss.backward()
+            # nn.utils.clip_grad_norm_(self.model.parameters(), 5)
+            self.opt.step()
         train_loss = n_loss/n_total
         train_acc = 100. * n_correct/n_total
         return train_loss, train_acc
@@ -84,6 +88,7 @@ class Train():
                 n_total += batch.batch_size
                 n_loss += loss.item()
 
+            # print(np.bincount(answer.cpu()), np.bincount(batch.label.cpu()))
             val_loss = n_loss/n_total
             val_acc = 100. * n_correct/n_total
             return val_loss, val_acc
@@ -107,7 +112,7 @@ class Train():
 
             train_loss, train_acc = self.train()
             val_loss, val_acc = self.validate()
-            self.scheduler.step()
+            # self.scheduler.step()
 
             took = time.time()-start
             self.result_checkpoint(epoch, train_loss, val_loss, train_acc, val_acc, took)

@@ -62,7 +62,8 @@ class myDataset:
             skip_header = False
         )
 
-        TEXT.build_vocab(train_set, vectors='glove.6B.300d')
+        TEXT.build_vocab(train_set, vectors='glove.6B.300d') # max_size=20000, min_freq=2)
+        # TEXT.build_vocab(train_set, vectors=args.model)
 
         train_itr, val_itr = data.BucketIterator.splits(
             (train_set, val_set),
