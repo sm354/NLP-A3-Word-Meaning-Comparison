@@ -20,6 +20,11 @@ from torchtext.data.utils import get_tokenizer
 from model import *
 from utils import *
 
+en = spacy.load('en_core_web_sm')
+def tokeni(sen):
+    t = en.tokenizer(sen)
+    return [word.text for word in t]
+
 def main():
     hidden_dim=128
     device = get_device(0)
@@ -31,9 +36,9 @@ def main():
     x_test.loc[:, "POS"] = x_test.loc[:, "POS"].apply(lambda POS_TAG : 0 if POS_TAG=="V" else 1)
     x_test.insert(3, "word1", word1)
     x_test.insert(5, "word2", word2)
-    x_test.to_csv("data/test.csv", header=None, index=False)
+    x_test.to_csv("test.csv", header=None, index=False)
 
-    with open(os.path.join("data", "Field_TEXT"), 'rb') as f:
+    with open(os.path.join("2018EE10957_A_model", "Field_TEXT"), 'rb') as f:
         TEXT = dill.load(f)
 
     fields = [
@@ -46,7 +51,7 @@ def main():
     ]
 
     test_set = data.TabularDataset.splits(
-        path = "data",
+        path = "./",
         test = "test.csv",
         format = 'csv',
         fields = fields,
@@ -62,7 +67,7 @@ def main():
     )
 
     model = myModel(pretrained_embeddings=TEXT.vocab.vectors, embed_dim=TEXT.vocab.vectors.shape[1], hidden_dim=hidden_dim, device=device)
-    saved_model = torch.load("data/best-biLSTM-params.pt", map_location=device)
+    saved_model = torch.load("2018EE10957_A_model/best-biLSTM-params.pt", map_location=device)
     print(saved_model["accuracy"])
     model.load_state_dict(saved_model['model_dict'])
     model = model.to(device)
@@ -88,7 +93,7 @@ if __name__ == "__main__":
 
     if args.score:
         pred = np.array(pandas.read_csv("output.txt", header=None)[0])
-        gold = np.array(pandas.read_csv("data/test.gold.txt", header=None)[0])
+        gold = np.array(pandas.read_csv("test.gold.txt", header=None)[0])
 
         print((pred==gold).mean())
 
