@@ -111,7 +111,6 @@ class Train():
         self.logger.info("[*] Training finished!\n\n")
         print('-' * 99)
         print(" [*] Training finished!")
-        print(" [*] Please find the saved model and training log in results_dir")
 
 if __name__ == "__main__":
     ## Start training

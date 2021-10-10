@@ -73,7 +73,7 @@ def check_folder(log_dir):
 
 def get_logger(args, phase):
 	logging.basicConfig(level=logging.INFO, 
-												filename = "{}_{}.log".format(args.model, phase),
+												filename = "{}/{}_{}.log".format(args.dataset, args.model, phase),
 												format = '%(asctime)s - %(message)s', 
 												datefmt='%d-%b-%y %H:%M:%S')
 	return logging.getLogger(phase)
