@@ -19,9 +19,9 @@ def parse_args():
 	parser.add_argument('--dataset', '-d', type=str, default='data')
 	parser.add_argument('--model', '-m', type=str, default='bilstm')
 	parser.add_argument('--gpu', type=int, default=0)
-	parser.add_argument('--batch_size', type=int, default=128)
-	parser.add_argument('--hidden_dim', type=int, default=100)
-	parser.add_argument('--epochs', type=int, default=20)
+	parser.add_argument('--batch_size', type=int, default=32)
+	parser.add_argument('--hidden_dim', type=int, default=128)
+	parser.add_argument('--epochs', type=int, default=15)
 	parser.add_argument('--lr', type=float, default=0.001)
 	return check_args(parser.parse_args())
 

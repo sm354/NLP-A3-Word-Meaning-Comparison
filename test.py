@@ -53,7 +53,7 @@ def main(hidden_dim=100, gpu=0):
     )
 
     model = myModel(pretrained_embeddings=TEXT.vocab.vectors, embed_dim=TEXT.vocab.vectors.shape[1], hidden_dim=hidden_dim, device=device)
-    saved_model = torch.load("data/best-bilstm-params.pt", map_location=device)
+    saved_model = torch.load("data/best-lstm_glove6b300d-params.pt", map_location=device)
     print(saved_model["accuracy"])
     model.load_state_dict(saved_model['model_dict'])
     model = model.to(device)

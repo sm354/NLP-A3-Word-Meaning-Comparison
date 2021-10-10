@@ -1,5 +1,7 @@
 import os
 import time
+import random
+from tqdm import tqdm
 import datetime
 import numpy as np
 import pandas
@@ -16,6 +18,11 @@ from torchtext.data.utils import get_tokenizer
 from model import *
 from dataset import *
 from utils import *
+
+# fixing seeds to reproduce results (exact!)
+torch.manual_seed(4)
+random.seed(4)
+np.random.seed(4)
 
 class Train():
     def __init__(self):
@@ -94,7 +101,8 @@ class Train():
     def execute(self):
         print(" [*] Training starts!")
         print('-' * 99)
-        for epoch in range(1, self.args.epochs+1):
+        pbar = tqdm(range(1, self.args.epochs+1))
+        for epoch in pbar:
             start = time.time()
 
             train_loss, train_acc = self.train()
@@ -104,7 +112,7 @@ class Train():
             took = time.time()-start
             self.result_checkpoint(epoch, train_loss, val_loss, train_acc, val_acc, took)
 
-            print('| Epoch {:3d} | train loss {:5.2f} | train acc {:5.2f} | val loss {:5.2f} | val acc {:5.2f} | time: {:5.2f}s |'.format(
+            pbar.set_description('| Epoch {:3d} | train loss {:5.2f} | train acc {:5.2f} | val loss {:5.2f} | val acc {:5.2f} | time: {:5.2f}s |'.format(
                 epoch, train_loss, train_acc, val_loss, val_acc, took))
         self.finish()
 
@@ -112,6 +120,7 @@ class Train():
         self.logger.info("[*] Training finished!\n\n")
         print('-' * 99)
         print(" [*] Training finished!")
+        print("best validation accuracy:", self.best_val_acc)
 
 if __name__ == "__main__":
     ## Start training

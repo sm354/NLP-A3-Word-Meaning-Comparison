@@ -62,13 +62,13 @@ class myDataset:
             skip_header = False
         )
 
-        TEXT.build_vocab(train_set, vectors='glove.6B.100d')
+        TEXT.build_vocab(train_set, vectors='glove.6B.300d')
 
         train_itr, val_itr = data.BucketIterator.splits(
             (train_set, val_set),
             #sort_key = lambda sample : len(sample.sen1),
             sort = False,
-            batch_size = 32,
+            batch_size = args.batch_size,
             repeat = False
         )
         with open(os.path.join(self.args.dataset, "Field_TEXT"), 'wb') as f:

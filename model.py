@@ -22,7 +22,7 @@ class myModel(nn.Module):
         
         self.embedding = nn.Embedding.from_pretrained(pretrained_embeddings, freeze=False)
         self.dropout = nn.Dropout(p = 0.5)
-        self.bilstm = nn.LSTM(embed_dim, hidden_dim, bidirectional=True, batch_first=True)
+        self.bilstm = nn.LSTM(embed_dim, hidden_dim, bidirectional=False, batch_first=True, num_layers=1)
         self.similarity = nn.CosineSimilarity(dim=1)
         self.sigmoid = nn.Sigmoid()
 
@@ -48,8 +48,8 @@ class myModel(nn.Module):
         out2, (_, _) = self.bilstm(out2)
 
         # word of interest
-        woi1_idx = torch.repeat_interleave(torch.unsqueeze(torch.unsqueeze(input.word1, 1), 2), 2*self.hidden_dim, dim=2).to(self.device)
-        woi2_idx = torch.repeat_interleave(torch.unsqueeze(torch.unsqueeze(input.word2, 1), 2), 2*self.hidden_dim, dim=2).to(self.device)
+        woi1_idx = torch.repeat_interleave(torch.unsqueeze(torch.unsqueeze(input.word1, 1), 2), self.hidden_dim, dim=2).to(self.device)
+        woi2_idx = torch.repeat_interleave(torch.unsqueeze(torch.unsqueeze(input.word2, 1), 2), self.hidden_dim, dim=2).to(self.device)
 
         # gather the word of interest for each sentence in the batch
         out1 = torch.gather(input=out1, dim=1, index=woi1_idx).squeeze()
