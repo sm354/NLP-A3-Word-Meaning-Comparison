@@ -1,6 +1,8 @@
 import os
 import time
 import random
+import spacy
+import dill
 from tqdm import tqdm
 import datetime
 import numpy as np
@@ -99,7 +101,7 @@ class Train():
             torch.save({
                 'accuracy': self.best_val_acc,
                 'model_dict': self.model.state_dict(),
-            }, '{}/best-{}-params.pt'.format(self.args.dataset, self.args.model))
+            }, '{}/best-{}-params.pt'.format(self.args.results_dir, self.args.model))
         self.logger.info('| Epoch {:3d} | train loss {:5.2f} | train acc {:5.2f} | val loss {:5.2f} | val acc {:5.2f} | time: {:5.2f}s |'
                 .format(epoch, train_loss, train_acc, val_loss, val_acc, took))
 

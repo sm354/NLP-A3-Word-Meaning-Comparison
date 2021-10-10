@@ -1,21 +1,30 @@
 import os
-import pandas
-import numpy as np
+import time
+import random
+import spacy
 import dill
+from tqdm import tqdm
+import datetime
+import numpy as np
+import pandas
+import logging
+from argparse import ArgumentParser
+from pdb import set_trace
 import torch
 import torch.optim as O
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.optim.lr_scheduler import StepLR
 from torchtext.legacy import data
+from torchtext.data.utils import get_tokenizer
 from model import *
 from utils import *
 
-def main(hidden_dim=100, gpu=0):
-    hidden_dim=100
+def main():
+    hidden_dim=128
     device = get_device(0)
 
-    x_test = pandas.read_csv("data/test.data.txt", delimiter='\t', header=None, names=['word', 'POS', 'position', 'sen1', 'sen2'])
+    x_test = pandas.read_csv("test.data.txt", delimiter='\t', header=None, names=['word', 'POS', 'position', 'sen1', 'sen2'])
     word1 = x_test.loc[:,'position'].apply(lambda positions : positions.split("-")[0])
     word2 = x_test.loc[:,'position'].apply(lambda positions : positions.split("-")[1])
     x_test = x_test.drop("position", axis=1)
@@ -53,7 +62,7 @@ def main(hidden_dim=100, gpu=0):
     )
 
     model = myModel(pretrained_embeddings=TEXT.vocab.vectors, embed_dim=TEXT.vocab.vectors.shape[1], hidden_dim=hidden_dim, device=device)
-    saved_model = torch.load("data/best-lstm_glove6b300d-params.pt", map_location=device)
+    saved_model = torch.load("data/best-biLSTM-params.pt", map_location=device)
     print(saved_model["accuracy"])
     model.load_state_dict(saved_model['model_dict'])
     model = model.to(device)

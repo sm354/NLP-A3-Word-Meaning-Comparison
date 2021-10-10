@@ -1,7 +1,11 @@
-## Various utility functions
 import os
 import time
+import random
+import spacy
+import dill
+from tqdm import tqdm
 import datetime
+import numpy as np
 import pandas
 import logging
 from argparse import ArgumentParser
@@ -17,18 +21,20 @@ from torchtext.data.utils import get_tokenizer
 def parse_args():
 	parser = ArgumentParser(description='NLP A3-A')
 	parser.add_argument('--dataset', '-d', type=str, default='data')
-	parser.add_argument('--model', '-m', type=str, default='bilstm')
+	parser.add_argument('--model', '-m', type=str, default='biLSTM')
 	parser.add_argument('--gpu', type=int, default=0)
 	parser.add_argument('--batch_size', type=int, default=32)
 	parser.add_argument('--hidden_dim', type=int, default=128)
-	parser.add_argument('--epochs', type=int, default=15)
+	parser.add_argument('--epochs', type=int, default=20)
 	parser.add_argument('--lr', type=float, default=0.001)
+	parser.add_argument('--results_dir', type=str, default='2018EE10957_A_model')
 	return check_args(parser.parse_args())
 
 """checking arguments"""
 def check_args(args):
 	# --result_dir
 	check_folder(os.path.join(args.dataset))
+	check_folder(os.path.join(args.results_dir))
 
 	# --epoch
 	try:
@@ -73,7 +79,7 @@ def check_folder(log_dir):
 
 def get_logger(args, phase):
 	logging.basicConfig(level=logging.INFO, 
-												filename = "{}/{}_{}.log".format(args.dataset, args.model, phase),
+												filename = "{}_{}.log".format(args.model, phase),
 												format = '%(asctime)s - %(message)s', 
 												datefmt='%d-%b-%y %H:%M:%S')
 	return logging.getLogger(phase)

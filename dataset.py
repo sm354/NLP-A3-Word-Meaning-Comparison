@@ -1,10 +1,12 @@
 import os
-import copy
 import time
-import datetime
-from typing import Text
-import pandas
+import random
+import spacy
 import dill
+from tqdm import tqdm
+import datetime
+import numpy as np
+import pandas
 import logging
 from argparse import ArgumentParser
 from pdb import set_trace
@@ -30,6 +32,11 @@ def process_data(path, train=True):
     dataset.insert(5, "word2", word2)
     dataset.to_csv(os.path.join(path, "%s/%s.csv"%(train, train)), header=None, index=False)
 
+en = spacy.load('en_core_web_sm')
+def tokeni(sen):
+    t = en.tokenizer(sen)
+    return [word.text for word in t]
+
 class myDataset:
     def __init__(self, args):
         self.args = args
@@ -40,7 +47,7 @@ class myDataset:
         TEXT = data.Field(
             sequential=True,
             lower=True,
-            tokenize=lambda sen : sen.split(" "),
+            tokenize=tokeni, # lambda sen : sen.split(" "),
         )
         # get_tokenizer("basic_english"),
         fields = [
@@ -72,9 +79,9 @@ class myDataset:
             batch_size = args.batch_size,
             repeat = False
         )
-        with open(os.path.join(self.args.dataset, "Field_TEXT"), 'wb') as f:
+        with open(os.path.join(self.args.results_dir, "Field_TEXT"), 'wb') as f:
             dill.dump(TEXT, f)
-        print("TEXT Field saved in %s"%self.args.dataset)
+        print("TEXT Field saved in %s"%self.args.results_dir)
         
         self.vocab = TEXT.vocab
         self.train_iter = train_itr
