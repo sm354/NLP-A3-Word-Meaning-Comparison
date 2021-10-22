@@ -18,6 +18,12 @@ from torch.optim.lr_scheduler import StepLR
 from torchtext.legacy import data
 from torchtext.data.utils import get_tokenizer
 
+def set_seed(seed=4):
+	# fixing seeds to reproduce results (exact!)
+	torch.manual_seed(seed)
+	random.seed(seed)
+	np.random.seed(seed)
+
 def parse_args():
 	parser = ArgumentParser(description='NLP A3-A')
 	parser.add_argument('--dataset', '-d', type=str, default='data')

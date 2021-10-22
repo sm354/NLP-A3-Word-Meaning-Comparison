@@ -21,10 +21,7 @@ from model import *
 from dataset import *
 from utils import *
 
-# fixing seeds to reproduce results (exact!)
-torch.manual_seed(4)
-random.seed(4)
-np.random.seed(4)
+set_seed()
 
 class Train():
     def __init__(self):
@@ -47,14 +44,14 @@ class Train():
 
         self.model = self.model.to(self.device)
         self.criterion = nn.BCELoss()
-        self.opt = O.Adam(self.model.parameters(), lr = self.args.lr)
+        self.opt = O.Adam(self.model.parameters(), lr = self.args.lr) #, weight_decay=0.005)
         self.best_val_acc = None
         # self.scheduler = StepLR(self.opt, step_size=5, gamma=0.5)
 
         print("resource preparation done: {}".format(datetime.datetime.now()))
 
-    def train(self):
-        self.model.train(); self.dataset.train_iter.init_epoch()
+    def train(self,epoch):
+        self.model.train() #; self.dataset.train_iter.init_epoch()
         n_correct, n_total, n_loss = 0, 0, 0
         for batch_idx, batch in enumerate(self.dataset.train_iter):
             # if batch.batch_size != self.args.batch_size:
@@ -70,14 +67,16 @@ class Train():
             n_loss += loss.item()
 
             loss.backward()
-            # nn.utils.clip_grad_norm_(self.model.parameters(), 5)
+            # nn.utils.clip_grad_norm_(self.model.parameters(), 1, error_if_nonfinite=True)
             self.opt.step()
+        # if epoch == 20:
+            # set_trace()
         train_loss = n_loss/n_total
         train_acc = 100. * n_correct/n_total
         return train_loss, train_acc
 
-    def validate(self):
-        self.model.eval(); self.dataset.dev_iter.init_epoch()
+    def validate(self,epoch):
+        self.model.eval() #; self.dataset.dev_iter.init_epoch()
         n_correct, n_total, n_loss = 0, 0, 0
         with torch.no_grad():
             for batch_idx, batch in enumerate(self.dataset.dev_iter):
@@ -90,7 +89,6 @@ class Train():
                 n_total += batch.batch_size
                 n_loss += loss.item()
 
-            # print(np.bincount(answer.cpu()), np.bincount(batch.label.cpu()))
             val_loss = n_loss/n_total
             val_acc = 100. * n_correct/n_total
             return val_loss, val_acc
@@ -112,8 +110,8 @@ class Train():
         for epoch in pbar:
             start = time.time()
 
-            train_loss, train_acc = self.train()
-            val_loss, val_acc = self.validate()
+            train_loss, train_acc = self.train(epoch)
+            val_loss, val_acc = self.validate(epoch)
             # self.scheduler.step()
 
             took = time.time()-start

@@ -47,7 +47,7 @@ class myDataset:
         TEXT = data.Field(
             sequential=True,
             lower=True,
-            tokenize=tokeni, # lambda sen : sen.split(" "),
+            tokenize=tokeni, 
         )
         # get_tokenizer("basic_english"),
         fields = [
@@ -66,19 +66,28 @@ class myDataset:
             validation = 'validation/validation.csv',
             format = 'csv',
             fields = fields,
-            skip_header = False
+            skip_header = False,
         )
 
-        TEXT.build_vocab(train_set, vectors='glove.6B.300d') # max_size=20000, min_freq=2)
-        # TEXT.build_vocab(train_set, vectors=args.model)
+        TEXT.build_vocab(train_set, vectors='glove.6B.300d')
 
         train_itr, val_itr = data.BucketIterator.splits(
             (train_set, val_set),
             #sort_key = lambda sample : len(sample.sen1),
             sort = False,
             batch_size = args.batch_size,
-            repeat = False
         )
+
+        # my = TEXT.vocab.vectors
+        # zero = torch.zeros(300)
+        # zero_embs = ((my==zero).sum(axis=1) == 300)
+        # zero_embs[0:2] = torch.tensor([False, False])
+        # # zero_embs.sum()
+        # TEXT.vocab.vectors[zero_embs] = torch.rand(zero_embs.sum(),300)
+        # zero_embs = ((TEXT.vocab.vectors==zero).sum(axis=1) == 300)
+        # # zero_embs[0:2] = torch.tensor([False, False])
+        # print("zero embeddings in TEXT.vocab.vectors", zero_embs.sum())
+
         with open(os.path.join(self.args.results_dir, "Field_TEXT"), 'wb') as f:
             dill.dump(TEXT, f)
         print("TEXT Field saved in %s"%self.args.results_dir)
@@ -86,3 +95,6 @@ class myDataset:
         self.vocab = TEXT.vocab
         self.train_iter = train_itr
         self.dev_iter = val_itr
+        self.TEXT = TEXT
+        self.train_set = train_set
+        self.val_set = val_set
