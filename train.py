@@ -38,8 +38,8 @@ class Train():
         self.logger = get_logger(self.args, "train")
         self.logger.info("Arguments: {}".format(self.args))
 
-        self.trainset = WiC_dataset(self.args.dataset, max_len=128, train=True, tokenizer='bert-base-uncased')
-        self.devset = WiC_dataset(self.args.dataset, max_len=128, train=False, tokenizer='bert-base-uncased')
+        self.trainset = myDataset(self.args.dataset, max_len=128, train=True, tokenizer='bert-base-uncased')
+        self.devset = myDataset(self.args.dataset, max_len=128, train=False, tokenizer='bert-base-uncased')
 
         # self.trainloader = DataLoader(trainset, batch_size = args.batch_size, shuffle = True)
         # self.devloader = DataLoader(devset, batch_size = args.batch_size, shuffle = False)

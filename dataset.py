@@ -24,7 +24,7 @@ def process_data(path, train=True):
     # dataset.to_csv(os.path.join(path, "%s/%s.csv"%(train, train)), header=None, index=False)
     return dataset
 
-class WiC_dataset(Dataset):
+class myDataset(Dataset):
     def __init__(self, data_dir, max_len=128, train=True, tokenizer='bert-base-uncased'):
         self.data_dir = data_dir
         self.max_len = max_len
