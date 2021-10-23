@@ -1,22 +1,16 @@
 import os
-import time
 import random
-import spacy
+# import spacy
 import dill
 from tqdm import tqdm
-import datetime
 import numpy as np
 import pandas
-import logging
 from argparse import ArgumentParser
 from pdb import set_trace
 import torch
-import torch.optim as O
-import torch.nn as nn
-import torch.nn.functional as F
-from torch.optim.lr_scheduler import StepLR
-from torchtext.legacy import data
-from torchtext.data.utils import get_tokenizer
+
+from torch.utils.data import Dataset
+from transformers import AutoTokenizer
 
 def process_data(path, train=True):
     train = "train" if train else "validation"
@@ -31,70 +25,100 @@ def process_data(path, train=True):
     dataset.insert(3, "word1", word1)
     dataset.insert(5, "word2", word2)
     dataset.to_csv(os.path.join(path, "%s/%s.csv"%(train, train)), header=None, index=False)
+    return dataset
 
-en = spacy.load('en_core_web_sm')
-def tokeni(sen):
-    t = en.tokenizer(sen)
-    return [word.text for word in t]
+class WiC_dataset(Dataset):
+    def __init__(self, data_dir, max_len=128, train=True, tokenizer='bert-base-uncased'):
+        self.data_dir = data_dir
+        self.max_len = max_len
+        self.train = train
 
-class myDataset:
-    def __init__(self, args):
-        self.args = args
+        # convert raw data into pandas data frame
+        self.dataset_df = process_data(data_dir, train=train)
+
+        # tokenizer
+        self.tokenizer = AutoTokenizer.from_pretrained(tokenizer, do_lower_case=True)
+
+    def __getitem__(self, index):
+        sample = self.dataset_df.iloc[index]
+
+        tokenized = self.tokenizer(sample['sen1'], sample['sen2'], return_tensors='pt', \
+                                add_special_tokens=True, max_len=self.max_len, padding='max_length')
         
-        process_data(args.dataset, train=True)
-        process_data(args.dataset, train=False)
+        x = tokenized['input_ids']
+        y = torch.tensor(sample['label'])
+        return x,y
+    
+    def __len__(self):
+        return len(self.dataset_df)
 
-        TEXT = data.Field(
-            sequential=True,
-            lower=True,
-            tokenize=tokeni, 
-        )
-        # get_tokenizer("basic_english"),
-        fields = [
-            ('word', TEXT),
-            ('POS', data.Field(use_vocab=False, sequential=False)), 
-            ('sen1', TEXT),
-            ('word1', data.Field(use_vocab=False, sequential=False)),
-            ('sen2', TEXT),
-            ('word2', data.Field(use_vocab=False, sequential=False)),
-            ('label', data.Field(use_vocab=False, sequential=False)),
-        ]
 
-        train_set, val_set = data.TabularDataset.splits(
-            path = args.dataset,
-            train = 'train/train.csv',
-            validation = 'validation/validation.csv',
-            format = 'csv',
-            fields = fields,
-            skip_header = False,
-        )
+# en = spacy.load('en_core_web_sm')
+# def tokeni(sen):
+#     t = en.tokenizer(sen)
+#     return [word.text for word in t]
 
-        TEXT.build_vocab(train_set, vectors='glove.6B.300d')
-
-        train_itr, val_itr = data.BucketIterator.splits(
-            (train_set, val_set),
-            #sort_key = lambda sample : len(sample.sen1),
-            sort = False,
-            batch_size = args.batch_size,
-        )
-
-        # my = TEXT.vocab.vectors
-        # zero = torch.zeros(300)
-        # zero_embs = ((my==zero).sum(axis=1) == 300)
-        # zero_embs[0:2] = torch.tensor([False, False])
-        # # zero_embs.sum()
-        # TEXT.vocab.vectors[zero_embs] = torch.rand(zero_embs.sum(),300)
-        # zero_embs = ((TEXT.vocab.vectors==zero).sum(axis=1) == 300)
-        # # zero_embs[0:2] = torch.tensor([False, False])
-        # print("zero embeddings in TEXT.vocab.vectors", zero_embs.sum())
-
-        with open(os.path.join(self.args.results_dir, "Field_TEXT"), 'wb') as f:
-            dill.dump(TEXT, f)
-        print("TEXT Field saved in %s"%self.args.results_dir)
+# class myDataset:
+#     def __init__(self, args, tokenizer='bert-base-uncased'):
+#         self.args = args
         
-        self.vocab = TEXT.vocab
-        self.train_iter = train_itr
-        self.dev_iter = val_itr
-        self.TEXT = TEXT
-        self.train_set = train_set
-        self.val_set = val_set
+#         process_data(args.dataset, train=True)
+#         process_data(args.dataset, train=False)
+
+#         # now we will encode each sentence into ids using tokenizer (of particular model)
+#         # ie sentence -> tokens -> ids
+#         # Also, special tokens will be added in the field
+
+#         tokenizer = AutoTokenizer.from_pretrained(tokenizer) #, do_lower_case=True) handled in data.Field
+#         spl_token_ids = {
+#             "cls": tokenizer.cls_token_id, 
+#             "sep": tokenizer.sep_token_id, 
+#             "pad": tokenizer.pad_token_id, 
+#             "mask": tokenizer.mask_token_id),
+#         }
+
+#         TEXT = data.Field(
+#             sequential=True,
+#             lower=True,
+#             use_vocab=False,
+#             tokenize=lambda sen : tokenizer.encode_plus(sen, add_special_tokens=False, return_tensors='pt'), 
+#         )
+#         # get_tokenizer("basic_english"),
+#         fields = [
+#             ('word', TEXT),
+#             ('POS', data.Field(use_vocab=False, sequential=False)), 
+#             ('sen1', TEXT),
+#             ('word1', data.Field(use_vocab=False, sequential=False)),
+#             ('sen2', TEXT),
+#             ('word2', data.Field(use_vocab=False, sequential=False)),
+#             ('label', data.Field(use_vocab=False, sequential=False)),
+#         ]
+
+#         train_set, val_set = data.TabularDataset.splits(
+#             path = args.dataset,
+#             train = 'train/train.csv',
+#             validation = 'validation/validation.csv',
+#             format = 'csv',
+#             fields = fields,
+#             skip_header = False,
+#         )
+
+#         # TEXT.build_vocab(train_set, vectors='glove.6B.300d')
+
+#         train_itr, val_itr = data.BucketIterator.splits(
+#             (train_set, val_set),
+#             #sort_key = lambda sample : len(sample.sen1),
+#             sort = False,
+#             batch_size = args.batch_size,
+#         )
+
+#         # with open(os.path.join(self.args.results_dir, "Field_TEXT"), 'wb') as f:
+#             # dill.dump(TEXT, f)
+#         # print("TEXT Field saved in %s"%self.args.results_dir)
+        
+#         self.vocab = TEXT.vocab
+#         self.train_iter = train_itr
+#         self.dev_iter = val_itr
+#         self.TEXT = TEXT
+#         self.train_set = train_set
+#         self.val_set = val_set

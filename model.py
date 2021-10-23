@@ -1,49 +1,30 @@
-import os
-import time
-import random
-import spacy
-import dill
 from tqdm import tqdm
-import datetime
 import numpy as np
 import pandas
-import logging
-from argparse import ArgumentParser
 from pdb import set_trace
 import torch
 import torch.optim as O
 import torch.nn as nn
-import torch.nn.functional as F
-from torch.optim.lr_scheduler import StepLR
-from torchtext.legacy import data
-from torchtext.data.utils import get_tokenizer
+
+
 
 class myModel(nn.Module):
-    def __init__(self, pretrained_embeddings, embed_dim=100, hidden_dim=100, device=torch.device('cpu')):
+    def __init__(self, model_name="bert-base-uncased", device=torch.device('cpu')):
         super(myModel, self).__init__()
-        self.embed_dim = embed_dim
-        self.hidden_dim = hidden_dim
+        # self.embed_dim = embed_dim
+        # self.hidden_dim = hidden_dim
         self.device = device
+        self.bert = AutoModelForSequenceClassification.from_pretrained(model_name, )
         
-        self.embedding = nn.Embedding.from_pretrained(pretrained_embeddings, freeze=True)
+        # self.embedding = nn.Embedding.from_pretrained(pretrained_embeddings, freeze=True)
         # self.dropout = nn.Dropout(p = 0.5)
-        self.bilstm = nn.LSTM(embed_dim, hidden_dim, bidirectional=False, batch_first=True, num_layers=2)
+        # self.bilstm = nn.LSTM(embed_dim, hidden_dim, bidirectional=False, batch_first=True, num_layers=2)
         # self.fc = nn.Linear(hidden_dim, 2)
         # self.attn = nn.MultiheadAttention(embed_dim=300, num_heads=4, batch_first=True) #self.hidden_dim
-        self.similarity = nn.CosineSimilarity(dim=1)
-        self.sigmoid = nn.Sigmoid()
+        # self.similarity = nn.CosineSimilarity(dim=1)
+        # self.sigmoid = nn.Sigmoid()
 
     def forward(self, input):
-        '''
-            [torchtext.legacy.data.batch.Batch of size 32]
-                [.word]:[torch.LongTensor of size 1x32]
-                [.POS]:[torch.LongTensor of size 32]
-                [.sen1]:[torch.LongTensor of size 17x32]
-                [.word1]:[torch.LongTensor of size 32]
-                [.sen2]:[torch.LongTensor of size 26x32]
-                [.word2]:[torch.LongTensor of size 32]
-                [.label]:[torch.LongTensor of size 32]
-        '''
         input1 = input.sen1.permute(1,0).to(self.device)
         input2 = input.sen2.permute(1,0).to(self.device)
 

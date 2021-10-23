@@ -1,4 +1,4 @@
-import os
+# import os
 import time
 import random
 import spacy
@@ -15,8 +15,11 @@ import torch.optim as O
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.optim.lr_scheduler import StepLR
-from torchtext.legacy import data
-from torchtext.data.utils import get_tokenizer
+# from torchtext.legacy import data
+# from torchtext.data.utils import get_tokenizer
+
+from torch.utils.data import Dataset, DataLoader, RandomSampler, SequentialSampler
+
 from model import *
 from dataset import *
 from utils import *
@@ -31,16 +34,13 @@ class Train():
         self.logger = get_logger(self.args, "train")
         self.logger.info("Arguments: {}".format(self.args))
 
-        dataset_options = {
-            'batch_size': self.args.batch_size, 
-            'device': self.device
-            }
+        trainset = WiC_dataset(args.dataset, max_len=128, train=True, tokenizer='bert-base-uncased')
+        devset = WiC_dataset(args.dataset, max_len=128, train=False, tokenizer='bert-base-uncased')
 
-        self.dataset = myDataset(self.args)
-        self.vocab = self.dataset.vocab
-        self.embed_dim = self.vocab.vectors.shape[1]
+        self.trainloader = DataLoader(trainset, batch_size = args.batch_size, shuffle = True)
+        self.devloader = DataLoader(devset, batch_size = args.batch_size, shuffle = False)
 
-        self.model = myModel(self.vocab.vectors, self.embed_dim, self.args.hidden_dim, self.device)
+        self.model = myModel(self.device)
 
         self.model = self.model.to(self.device)
         self.criterion = nn.BCELoss()
@@ -53,7 +53,7 @@ class Train():
     def train(self,epoch):
         self.model.train() #; self.dataset.train_iter.init_epoch()
         n_correct, n_total, n_loss = 0, 0, 0
-        for batch_idx, batch in enumerate(self.dataset.train_iter):
+        for batch_idx, batch in enumerate(self.trainloader):
             # if batch.batch_size != self.args.batch_size:
             #     print(batch.batch_size)
             self.opt.zero_grad()
@@ -79,7 +79,7 @@ class Train():
         self.model.eval() #; self.dataset.dev_iter.init_epoch()
         n_correct, n_total, n_loss = 0, 0, 0
         with torch.no_grad():
-            for batch_idx, batch in enumerate(self.dataset.dev_iter):
+            for batch_idx, batch in enumerate(self.devloader):
                 batch.label = batch.label.to(self.device)
                 answer = self.model(batch)
                 loss = self.criterion(answer, batch.label.float())
