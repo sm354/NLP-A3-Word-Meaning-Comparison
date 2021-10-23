@@ -1,6 +1,4 @@
-from tqdm import tqdm
 import numpy as np
-import pandas
 from pdb import set_trace
 import torch
 import torch.optim as O
@@ -12,7 +10,7 @@ class myModel(nn.Module):
         # self.embed_dim = embed_dim
         # self.hidden_dim = hidden_dim
         self.device = device
-        self.bert = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=2) #, output_attentions=False, output_hidden_states=False)
+        self.bert = None #AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=2) #, output_attentions=False, output_hidden_states=False)
         
         # self.embedding = nn.Embedding.from_pretrained(pretrained_embeddings, freeze=True)
         # self.dropout = nn.Dropout(p = 0.5)

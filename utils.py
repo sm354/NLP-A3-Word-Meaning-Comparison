@@ -1,12 +1,6 @@
 import os
-import time
 import random
-import spacy
-import dill
-from tqdm import tqdm
-import datetime
 import numpy as np
-import pandas
 import logging
 from argparse import ArgumentParser
 from pdb import set_trace
@@ -27,33 +21,14 @@ def set_seed(seed=4):
 def parse_args():
 	parser = ArgumentParser(description='NLP A3-A')
 	parser.add_argument('--dataset', '-d', type=str, default='data')
-	parser.add_argument('--model', '-m', type=str, default='biLSTM')
+	parser.add_argument('--model', '-m', type=str, default='bert')
 	parser.add_argument('--gpu', type=int, default=0)
-	parser.add_argument('--batch_size', type=int, default=32)
-	parser.add_argument('--hidden_dim', type=int, default=128)
-	parser.add_argument('--epochs', type=int, default=20)
-	parser.add_argument('--lr', type=float, default=0.001)
-	parser.add_argument('--results_dir', type=str, default='2018EE10957_A_model')
-	return check_args(parser.parse_args())
-
-"""checking arguments"""
-def check_args(args):
-	# --result_dir
-	check_folder(os.path.join(args.dataset))
-	check_folder(os.path.join(args.results_dir))
-
-	# --epoch
-	try:
-			assert args.epochs >= 1
-	except:
-			print('number of epochs must be larger than or equal to one')
-
-	# --batch_size
-	try:
-			assert args.batch_size >= 1
-	except:
-			print('batch size must be larger than or equal to one')
-	return args
+	parser.add_argument('--batch_size', type=int, default=8)
+	# parser.add_argument('--hidden_dim', type=int, default=128)
+	# parser.add_argument('--epochs', type=int, default=20)
+	# parser.add_argument('--lr', type=float, default=0.001)
+	parser.add_argument('--results_dir', type=str, default='2018EE10957_B_model')
+	return parser.parse_args()
 
 def get_device(gpu_no):
 	if torch.cuda.is_available():
@@ -85,7 +60,8 @@ def check_folder(log_dir):
 
 def get_logger(args, phase):
 	logging.basicConfig(level=logging.INFO, 
-												filename = "{}_{}.log".format(args.model, phase),
-												format = '%(asctime)s - %(message)s', 
-												datefmt='%d-%b-%y %H:%M:%S')
+		filename = "{}_{}.log".format(args.model, phase),
+		format = '%(asctime)s - %(message)s', 
+		datefmt='%d-%b-%y %H:%M:%S'
+	)
 	return logging.getLogger(phase)
