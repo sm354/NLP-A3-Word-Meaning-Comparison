@@ -1,4 +1,4 @@
-# import os
+import os
 import time
 import random
 import spacy
@@ -19,6 +19,10 @@ from torch.optim.lr_scheduler import StepLR
 # from torchtext.data.utils import get_tokenizer
 
 from torch.utils.data import Dataset, DataLoader, RandomSampler, SequentialSampler
+from transformers import AutoTokenizer
+from transformers import AutoModelForSequenceClassification
+from transformers import Trainer
+from transformers import TrainingArguments
 
 from model import *
 from dataset import *
@@ -34,18 +38,19 @@ class Train():
         self.logger = get_logger(self.args, "train")
         self.logger.info("Arguments: {}".format(self.args))
 
-        trainset = WiC_dataset(args.dataset, max_len=128, train=True, tokenizer='bert-base-uncased')
-        devset = WiC_dataset(args.dataset, max_len=128, train=False, tokenizer='bert-base-uncased')
+        self.trainset = WiC_dataset(args.dataset, max_len=128, train=True, tokenizer='bert-base-uncased')
+        self.devset = WiC_dataset(args.dataset, max_len=128, train=False, tokenizer='bert-base-uncased')
 
-        self.trainloader = DataLoader(trainset, batch_size = args.batch_size, shuffle = True)
-        self.devloader = DataLoader(devset, batch_size = args.batch_size, shuffle = False)
+        # self.trainloader = DataLoader(trainset, batch_size = args.batch_size, shuffle = True)
+        # self.devloader = DataLoader(devset, batch_size = args.batch_size, shuffle = False)
 
-        self.model = myModel(self.device)
+        # self.model = myModel(self.device)
+        self.model = AutoModelForSequenceClassification.from_pretrained("bert-base-uncased", num_labels=2)
 
-        self.model = self.model.to(self.device)
-        self.criterion = nn.BCELoss()
-        self.opt = O.Adam(self.model.parameters(), lr = self.args.lr) #, weight_decay=0.005)
-        self.best_val_acc = None
+        # self.model = self.model.to(self.device)
+        # self.criterion = nn.BCELoss()
+        # self.opt = O.Adam(self.model.parameters(), lr = self.args.lr) #, weight_decay=0.005)
+        # self.best_val_acc = None
         # self.scheduler = StepLR(self.opt, step_size=5, gamma=0.5)
 
         print("resource preparation done: {}".format(datetime.datetime.now()))
@@ -104,22 +109,36 @@ class Train():
                 .format(epoch, train_loss, train_acc, val_loss, val_acc, took))
 
     def execute(self):
-        print(" [*] Training starts!")
-        print('-' * 99)
-        pbar = tqdm(range(1, self.args.epochs+1))
-        for epoch in pbar:
-            start = time.time()
+        training_args = TrainingArguments(
+            output_dir="dir", overwrite_output_dir=True, 
+            evaluation_strategy="epoch", learning_rate=5e-5,
+            num_train_epochs=3, seed=4,
+        )
 
-            train_loss, train_acc = self.train(epoch)
-            val_loss, val_acc = self.validate(epoch)
-            # self.scheduler.step()
+        trainer = Trainer(
+            model=self.model, args=training_args,
+            train_dataset=self.trainset, eval_dataset=self.devset,
+        )
 
-            took = time.time()-start
-            self.result_checkpoint(epoch, train_loss, val_loss, train_acc, val_acc, took)
+        trainer.train()
 
-            pbar.set_description('| Epoch {:3d} | train loss {:5.2f} | train acc {:5.2f} | val loss {:5.2f} | val acc {:5.2f} | time: {:5.2f}s |'.format(
-                epoch, train_loss, train_acc, val_loss, val_acc, took))
-        self.finish()
+
+        # print(" [*] Training starts!")
+        # print('-' * 99)
+        # pbar = tqdm(range(1, self.args.epochs+1))
+        # for epoch in pbar:
+        #     start = time.time()
+
+        #     train_loss, train_acc = self.train(epoch)
+        #     val_loss, val_acc = self.validate(epoch)
+        #     # self.scheduler.step()
+
+        #     took = time.time()-start
+        #     self.result_checkpoint(epoch, train_loss, val_loss, train_acc, val_acc, took)
+
+        #     pbar.set_description('| Epoch {:3d} | train loss {:5.2f} | train acc {:5.2f} | val loss {:5.2f} | val acc {:5.2f} | time: {:5.2f}s |'.format(
+        #         epoch, train_loss, train_acc, val_loss, val_acc, took))
+        # self.finish()
 
     def finish(self):
         self.logger.info("[*] Training finished!\n\n")

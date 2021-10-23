@@ -42,16 +42,19 @@ class WiC_dataset(Dataset):
     def __getitem__(self, index):
         sample = self.dataset_df.iloc[index]
 
-        tokenized = self.tokenizer(sample['sen1'], sample['sen2'], return_tensors='pt', \
-                                add_special_tokens=True, max_len=self.max_len, padding='max_length')
-        
-        x = tokenized['input_ids']
+        x = self.tokenizer(sample['sen1'], sample['sen2'], return_tensors='pt', \
+            add_special_tokens=True, max_length=self.max_len, padding='max_length')
         y = torch.tensor(sample['label'])
-        return x,y
+
+        item = {}
+        for k,v in x.items():
+            item[k] = v[0] # only one datapoint; shape: 128
+        item['labels'] = y
+
+        return item
     
     def __len__(self):
         return len(self.dataset_df)
-
 
 # en = spacy.load('en_core_web_sm')
 # def tokeni(sen):
