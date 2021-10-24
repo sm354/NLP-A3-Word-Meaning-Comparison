@@ -25,7 +25,7 @@ def process_data(path, train=True):
     return dataset
 
 class myDataset(Dataset):
-    def __init__(self, data_dir, max_len=128, train=True, tokenizer='bert-base-uncased'):
+    def __init__(self, data_dir, max_len=128, train=True, model_name='bert-base-uncased'):
         self.data_dir = data_dir
         self.max_len = max_len
         self.train = train
@@ -34,7 +34,7 @@ class myDataset(Dataset):
         self.dataset_df = process_data(data_dir, train=train)
 
         # tokenizer
-        self.tokenizer = AutoTokenizer.from_pretrained(tokenizer, do_lower_case=True)
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name, do_lower_case=True)
 
     def __getitem__(self, index):
         sample = self.dataset_df.iloc[index]
