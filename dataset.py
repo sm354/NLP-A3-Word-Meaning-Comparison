@@ -39,8 +39,8 @@ class myDataset(Dataset):
     def __getitem__(self, index):
         sample = self.dataset_df.iloc[index]
 
-        x = self.tokenizer(sample['sen1'], sample['sen2'], return_tensors='pt', \
-            add_special_tokens=True, max_length=self.max_len, padding='max_length')
+        x = self.tokenizer(sample['sen1'], sample['sen2'], return_tensors='pt', add_special_tokens=True, \
+            max_length=self.max_len, padding='max_length', truncation=True)
         y = torch.tensor(sample['label'])
 
         # format as required by Train
