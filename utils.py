@@ -21,13 +21,12 @@ def set_seed(seed=4):
 def parse_args():
 	parser = ArgumentParser(description='NLP A3-A')
 	parser.add_argument('--dataset', '-d', type=str, default='data')
-	parser.add_argument('--model_name', '-m', type=str, default='bert-base-uncased')
+	parser.add_argument('--model_name', '-m', type=str, default='bert-base-cased')
 	parser.add_argument('--gpu', type=int, default=0)
 	parser.add_argument('--batch_size', type=int, default=8)
 	parser.add_argument('--epochs', type=int, default=3)
 	# parser.add_argument('--hidden_dim', type=int, default=128)
-	# parser.add_argument('--epochs', type=int, default=20)
-	# parser.add_argument('--lr', type=float, default=0.001)
+	parser.add_argument('--lr', type=float, default=5e-5)
 	parser.add_argument('--results_dir', type=str, default='2018EE10957_B_model')
 	return parser.parse_args()
 

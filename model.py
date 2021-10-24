@@ -4,14 +4,19 @@ import torch
 import torch.optim as O
 import torch.nn as nn
 
+from transformers import BertModel
+
 class myModel(nn.Module):
     def __init__(self, model_name="bert-base-uncased", device=torch.device('cpu')):
         super(myModel, self).__init__()
-        # self.embed_dim = embed_dim
-        # self.hidden_dim = hidden_dim
         self.device = device
-        self.bert = None #AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=2) #, output_attentions=False, output_hidden_states=False)
+        self.bert = BertModel.from_pretrained("bert-base-cased")
+        self.fc = nn.Linear(768, 1)
         
+        # freeze pre-trained weights
+        for param in self.bert.parameters():
+            param.requires_grad=False
+
         # self.embedding = nn.Embedding.from_pretrained(pretrained_embeddings, freeze=True)
         # self.dropout = nn.Dropout(p = 0.5)
         # self.bilstm = nn.LSTM(embed_dim, hidden_dim, bidirectional=False, batch_first=True, num_layers=2)
@@ -21,7 +26,10 @@ class myModel(nn.Module):
         # self.sigmoid = nn.Sigmoid()
 
     def forward(self, input):
-        out = self.bert(input)
+        inp = {k:v.to(torch.device('cuda')) for k,v in input.items() if k != 'labels'}
+        out = self.bert(**inp)
+
+        out = self.fc(out[1])
         return out
 
         # input1 = input.sen1.permute(1,0).to(self.device)
