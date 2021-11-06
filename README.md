@@ -11,3 +11,13 @@ For example, consider the following sentences (S1, S2, S3)
 S1 and S2 use the same meaning of the word bank (river bed) while S1 and S3 use different meanings of the word bank (river bed vs. financial institution).
 
 In this work we develop deep neural networks to solve this classification problem ie whether a word has same or different meaning in different sentences. This is part of [Natural Language Processing](https://www.cse.iitd.ac.in/~mausam/courses/col772/autumn2021/) course taken by [Prof Mausam](https://www.cse.iitd.ac.in/~mausam/).
+
+#### Results
+
+We evaluate our model's performance using the [Word-in-Context (WiC) Dataset](https://pilehvar.github.io/wic/). WiC is a reliable benchmark for the evaluation of context-sensitive word embeddings.
+
+|        Model         | Validation Accuracy (%) | Test Accuracy (%) |
+| :------------------: | :---------------------: | :---------------: |
+| LSTM (with word2vec) |          63.5           |       55.5        |
+|         BERT         |           71            |       69.8        |
+
